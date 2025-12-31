@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_mall_project/data/models/product_entity.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
 class ProductList extends StatelessWidget {
   const ProductList({
@@ -46,6 +48,28 @@ class ProductListTile extends StatelessWidget {
   final ProductEntity product;
   final VoidCallback onTap;
 
+    String formatPrice(int price){
+    final formatter = NumberFormat('#,###');
+    return '${formatter.format(price)}원';
+  }
+
+  Widget _buildProductImage(ProductEntity product) {
+  // 1) 로컬 이미지가 있으면 파일로 표시
+  if (product.imagePath != null && product.imagePath!.isNotEmpty) {
+    final file = File(product.imagePath!);
+    return Image.file(file, fit: BoxFit.cover);
+  }
+
+  // 2) 네트워크 이미지가 있으면 네트워크로 표시
+  if (product.imageUrl != null && product.imageUrl!.isNotEmpty) {
+    return Image.network(product.imageUrl!, fit: BoxFit.cover);
+  }
+
+  // 3) 아무것도 없으면 placeholder
+  return const Center(
+    child: Text('이미지', style: TextStyle(color: Colors.black38)),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -65,9 +89,9 @@ class ProductListTile extends StatelessWidget {
                 color: Colors.white,
               ),
               alignment: Alignment.center,
-              child: const Text(
-                '이미지',
-                style: TextStyle(color: Colors.black38),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: _buildProductImage(product),
               ),
             ),
             const SizedBox(width: 18),
@@ -102,7 +126,8 @@ class ProductListTile extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 110),
               child: Text(
-                '${product.price}원',
+                formatPrice(product.price),
+                // '${product.price}원',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
